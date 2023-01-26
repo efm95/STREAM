@@ -16,9 +16,9 @@ from utility import *
 
 import gc
 
-data_preprocessing:bool = False
+data_preprocessing:bool = True
 model_selection:bool = True
-model_fitting:bool = False
+model_fitting:bool = True
 
 fit_repetition= 100
 
