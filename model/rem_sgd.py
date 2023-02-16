@@ -5,6 +5,8 @@ import torch.nn as nn
 from model.bspline import * 
 from model.rem_logit import *
 
+from utility import *
+
 
 class REM_sgd:
     def __init__(self,
@@ -13,8 +15,8 @@ class REM_sgd:
                  lr=0.01):
         self.spline_df = spline_df
         self.spline_df_inter = spline_df_inter
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-           
+        self.device = device_identifier()
+
         if spline_df_inter is not None:
             self.model = REM_logit(p=sum(self.spline_df)+sum([self.spline_df_inter[i]*self.spline_df_inter[i+2] for i in range(0,len(self.spline_df_inter),4)])).to(self.device)
         else:
@@ -28,7 +30,8 @@ class REM_sgd:
             X_inter:torch.tensor=None,
             batch_size:int = 2**17,
             epochs:int = 10,
-            val_batch:int =0):
+            val_batch:int =0,
+            verbose:bool = True):
                 
         #X = bi-dimensional tensor with "event","non-event" column structure
         #n_obs = len(X)
@@ -119,7 +122,8 @@ class REM_sgd:
                 logit_val = self.model(x_val)
                 val_loss = self.NLL(logit_val,torch.ones(len(x_tmp),1,device=self.device)).item()
                 
-                print(f'Epoch: {epoch+1} | Batch {batch+1}/{n_batches} | batch loss = {np.round(loss.item(),4)} | val loss = {np.round(val_loss,4)} | Perplexity = {np.round(perp.item(),4)}')
+                if verbose:
+                    print(f'Epoch: {epoch+1} | Batch {batch+1}/{n_batches} | batch loss = {np.round(loss.item(),4)} | val loss = {np.round(val_loss,4)} | Perplexity = {np.round(perp.item(),4)}')
 
                 #Stpping criterion
                 if np.round(val_loss,4) < np.round(best_val_loss,4):
@@ -128,7 +132,7 @@ class REM_sgd:
                 else:
                     if (curr_batch-best_batch)==10:
                         stopping_criterion = True
-                        print(f'Iteration stopped at epoch {epoch +1}, batch {batch+1} with train_loss {np.round(loss.item(),4)} and val. loss {np.round(val_loss,4)}')
+                        print(f'Iteration stopped at epoch {epoch +1}, batch {batch+1}/{n_batches} with train_loss {np.round(loss.item(),4)} and val. loss {np.round(val_loss,4)}')
                         break                 
                 
             if stopping_criterion:
