@@ -138,10 +138,10 @@ class REM_sgd:
             if stopping_criterion:
                 break
             
-    def test_loss_AIC(self,
-                      X:torch.tensor,
-                      X_inter:torch.tensor = None,
-                      AIC:bool=True):
+    def test_loss(self,
+                 X:torch.tensor,
+                 X_inter:torch.tensor = None,
+                 AIC:bool=True):
         
         X = spline_diff(X=X,df = self.spline_df,bounds=self.bounds)
         
