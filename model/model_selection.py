@@ -13,7 +13,6 @@ def REM_model_selection (X:torch.tensor,
                          batch_size:int = 2**17,
                          folds:int=6,
                          save:bool = True,
-                         AIC:bool = False,
                          dir_name:str = 'model_selection.pt'):
     
     index_long = torch.tensor(range(len(X)))
@@ -34,8 +33,7 @@ def REM_model_selection (X:torch.tensor,
             trainer = REM_sgd(spline_df=spline_df,lr=0.01)
             trainer.fit(X=X_train,batch_size=batch_size)
             
-            val_loss = trainer.test_loss_AIC(X_val,
-                                              AIC=AIC)
+            val_loss = trainer.test_loss(X_val, AIC=AIC)
             
             loss_mat[rep,d] = val_loss
         
