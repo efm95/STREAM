@@ -6,9 +6,16 @@ import gc
 
 from utility import *
 
+import logging
+logging.basicConfig(format='%(asctime)s [%(filename)s] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S',
+    level=logging.INFO)
+
 class sub_riskset:
     def __init__(self):
+        logging.info('Initialize creation of sub-risk-set')
         self.df = vx.open('data_preprocessing/event_set.hdf5')
+      
         
     def fit(self,
             n_samples:int = 10,
@@ -18,15 +25,20 @@ class sub_riskset:
         dates.sort()
         
         #unique_rec = self.df['receiver','rec_pub_year','rec_pub_day','receiver_pos']
-        unique_rec = self.df['receiver','rec_pub_year','rec_pub_day','receiver_pos','ipc_count_receiver']
+        logging.info('Filtering for unique receivers')
+        unique_rec = self.df.copy()['receiver','rec_pub_year','rec_pub_day','receiver_pos','receiver_outd']
         unique_rec = remove_duplicates(unique_rec,['receiver','rec_pub_day'])
         #unique_rec['index']=vx.vrange(0,len(unique_rec),1,dtype='int')
         
+        logging.info('Number of events at risk: {}'.format(len(unique_rec)))
+        logging.info('Events a risk \n {}'.format(unique_rec.head()))
+                
         day_count = unique_rec.groupby('rec_pub_day',agg='count')
         day_count = day_count.sort('rec_pub_day').to_pandas_df()
         day_count['rec_pub_day'] = day_count['rec_pub_day'].astype('int64')
         
         #Sampling patents for each publication date
+        logging.info('Sampling events for each issue day')
         over_rec = vx.from_pandas(day_count[day_count['count'] > n_samples])
         under_rec = vx.from_pandas(day_count[day_count['count'] <= n_samples])
         
@@ -35,8 +47,11 @@ class sub_riskset:
         
         over_rec = over_rec.groupby('rec_pub_day').sample(n_samples,replace=False,random_state=seed)
         under_rec = under_rec.groupby('rec_pub_day').sample(1,replace=False,random_state=seed)
-
-        unique_rec= pd.concat([over_rec,under_rec],ignore_index=True,axis=0)
+        
+        unique_rec= pd.concat([over_rec,under_rec],ignore_index=True,axis=0).sort_values(by='rec_pub_day')
+        
+        logging.info('Events in sub-risk-set: {}'.format(len(unique_rec)))
+        logging.info('Sub-risk-set \n {}'.format(unique_rec.head()))
         
         unique_rec_tmp = unique_rec.copy()
         unique_rec_tmp['range'] = range(len(unique_rec_tmp)) 
@@ -59,6 +74,7 @@ class sub_riskset:
         risk_set_cum_cit = np.zeros((len(unique_rec),len(event_days)))
         risk_set_tfe = np.zeros((len(unique_rec),len(event_days)))
         
+        logging.info('Computing time-varyinig effects')
         
         for i in tqdm(range(len(unique_rec))): #for every sampled received patent
     
@@ -97,15 +113,11 @@ class sub_riskset:
                     cumulative_gap = 0          
                 
             #gc.collect()
-            
+        
+        logging.info('Save sub-risk-set and time-varying effects')
         unique_rec = vx.from_pandas(unique_rec)
         unique_rec.export('effects/sub_risk_set.hdf5',progress=True)
         with open('effects/sub_risk_set.npy', 'wb') as f:
             np.save(f, risk_set_cum_cit)
             np.save(f, risk_set_tfe)
-        #np.save('effects/subrs_cum_cit.npy',risk_set_cum_cit)
-        #np.save('effects/subrs_tfe.npy',risk_set_tfe)
-        
-            
-    
-    
+
