@@ -8,9 +8,6 @@ logging.basicConfig(format='%(asctime)s [%(filename)s] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
 
-#import sys
-
-#sys.path.insert(1,'')
 
 from utility import *
 
@@ -44,8 +41,10 @@ class node_list_clean:
         grant_reduced = self.grant['patnum','pubdate']
         #self.grant['embedding_pos'] =  np.array(range(len(self.grant)))
         
+        logging.info('Adjusting time information and future embedding position to node list')
+        
         if grant_reduced['pubdate'].dtype != str:
-            grant_reduced['pubdate'] = grant_reduced['pubdate'].astype('int')#.astype('str')
+            grant_reduced['pubdate'] = grant_reduced['pubdate'].astype('int')
         
         grant_reduced = grant_reduced.to_pandas_df()
         
