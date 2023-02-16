@@ -140,8 +140,7 @@ class REM_sgd:
             
     def test_loss(self,
                  X:torch.tensor,
-                 X_inter:torch.tensor = None,
-                 AIC:bool=True):
+                 X_inter:torch.tensor = None):
         
         X = spline_diff(X=X,df = self.spline_df,bounds=self.bounds)
         
