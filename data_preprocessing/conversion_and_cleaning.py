@@ -8,6 +8,9 @@ logging.basicConfig(format='%(asctime)s [%(filename)s] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
     level=logging.INFO)
 
+#import sys
+
+#sys.path.insert(1,'')
 
 from utility import *
 

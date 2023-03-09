@@ -3,6 +3,9 @@ import numpy as np
 import vaex as vx
 import logging
 import pickle
+
+import warnings
+warnings.filterwarnings("ignore")
 from sentence_transformers import SentenceTransformer, LoggingHandler
 
 import timeit
@@ -18,7 +21,7 @@ class SBERT:
         
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
         self.model.max_seq_length = 256
-        
+                
     def fit(self):
 
         start = timeit.default_timer()

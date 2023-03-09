@@ -201,6 +201,5 @@ class event_set:
         ###################
         ### SAVING DATA ###
         ###################
-        
         logging.info('Saving event set data to hdf5 format')
         self.cit.export('data_preprocessing/event_set.hdf5',progress=True)
