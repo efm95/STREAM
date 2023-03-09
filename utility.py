@@ -112,3 +112,9 @@ def ipc_classes(ipc:str,
     return vx.from_pandas(ipc)
 
 
+#TODO: plot_spline
+
+
+
+#TODO: plot_rep
+
