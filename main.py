@@ -52,7 +52,7 @@ if __name__ == '__main__':
         print('Edge list cleaned')
         logging.info('Edge list cleaned')
         
-        #SBERT().fit()                              #Run on server with GPU node --> currently there is no mps support, only cuda
+        #SBERT().fit()                              #Run on server with GPU node --> currently no mps support, only cuda
         #logging.info('SBERT embeddings computed')
 
         event_set().fit()
