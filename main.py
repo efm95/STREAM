@@ -133,7 +133,7 @@ if __name__ == '__main__':
             
             gc.collect()
             
-        torch.save(coef_mat,'coef_estim/final.pt')
+        torch.save(coef_mat,'coef_estim/rem-100fit_12df.pt'.pt')
         
         
     if model_fitting_rep:
@@ -189,7 +189,7 @@ if __name__ == '__main__':
             
             del X
         
-        torch.save(coef_mat,'coef_estim/rem-10fit-50sub_12df.pt')
+        torch.save(coef_mat,'coef_estim/rem-10sub-50fit_12df.pt')
         
     if model_fitting_inter:
         
