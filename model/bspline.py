@@ -1,10 +1,11 @@
 import torch 
-import scipy.interpolate as si
+from utility import *
+#import scipy.interpolate as si
 
 class Bspline:
     def __init__(self,
                  x:torch.tensor, 
-                 df:int,#n_bases
+                 df:int,#degrees of fredom
                  degree:int=3,#polynomial degree
                  lower_bound =None,
                  upper_bound = None,
@@ -22,7 +23,7 @@ class Bspline:
             intercept (bool): Add a column-tensor of 1s to the model matrix. Defaults set to False.
         """
         
-        #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #self.device = device_identifier()#torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.x = x
         self.df = df
@@ -42,9 +43,9 @@ class Bspline:
             x_range = self.upper_bound-self.lower_bound
             down = self.lower_bound - x_range*0.001
             up = self.upper_bound + x_range*0.001
-            
+            # mgcv annotation
             m= self.degree -1
-            nk = self.df - m
+            nk = self.df - m # number of interior knots
             dknots = (up - down)/(nk - 1)
             
             start_k = down - dknots * (m + 1)
@@ -53,33 +54,57 @@ class Bspline:
             self.knots = torch.linspace(start=start_k,
                                    end = end_k,
                                    steps = steps_k)
-                                   #device = self.device)
+            #                       device = self.device)
+            #self.knots = torch.cat((self.knots,self.knots[-1].unsqueeze(0)))                       
         
         self.intercept = intercept
             
     def get_knots(self):
         return self.knots
     
-    def fit(self):
-        tck = [self.knots, torch.zeros(self.df,
-                                       #device=self.device,
-                                       dtype=torch.float32), self.degree]
-        X = torch.zeros([len(self.x), self.df],
-                        #device=self.device, 
-                        dtype=torch.float32)
+    def basis(self,x:torch.tensor,
+          k:torch.tensor,
+          i:int,
+          m:int = 2):
         
-        x = self.x.cpu().numpy()
+        if m==-1:
+            res = ((x<k[i+1]) & (x>=k[i]))*1
+    
+        else:
+            z0 = (x-k[i]) / (k[i+m+1]-k[i])
+            z1 = (k[i+m+2]-x)/(k[i+m+2]-k[i+1])
+            res =  z0*self.basis(x,k,i,m-1) + z1*self.basis(x,k,i+1,m-1).nan_to_num(nan=0)
+        return res
+    
+    def fit(self):
+        
+        #IMPLEMENTING DE BOOR 1972 RECURSIVE FUNCTION
+        X = torch.tensor([]).reshape(len(self.x),-1)
         for i in range(self.df):
-            vec = torch.zeros(self.df, dtype=torch.float32)
-            vec[i] = 1.0
-            tck[1] = vec
-            X[:,i]=torch.from_numpy(si.splev(x,tck,der=0))#.to(device=self.device)
-            
-        if self.intercept==True:
-            ones = torch.ones_like(X[:,:1])#,device=self.device)
-            X = torch.hstack([ones,X])
-            
+            X = torch.column_stack((X,self.basis(x=self.x,k=self.knots,i=i)))
+        
         return X
+        
+        #OLD VERSION USING SCIPY ---> SLOWER
+        #tck = [self.knots, torch.zeros(self.df,
+        #                               #device=self.device,
+        #                               dtype=torch.float32), self.degree]
+        #X = torch.zeros([len(self.x), self.df],
+        #                #device=self.device, 
+        #                dtype=torch.float32)
+        #
+        #x = self.x.cpu().numpy()
+        #for i in range(self.df):
+        #    vec = torch.zeros(self.df, dtype=torch.float32)
+        #    vec[i] = 1.0
+        #    tck[1] = vec
+        #    X[:,i]=torch.from_numpy(si.splev(x,tck,der=0))#.to(device=self.device)
+        #    
+        #if self.intercept==True:
+        #    ones = torch.ones_like(X[:,:1])#,device=self.device)
+        #    X = torch.hstack([ones,X])
+            
+        #return X
     
 def row_kron(f1:torch.tensor,
              f2:torch.tensor):

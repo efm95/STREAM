@@ -6,7 +6,11 @@ from model.bspline import *
 from model.rem_logit import *
 
 from utility import *
-
+import logging
+logging.basicConfig(format='%(asctime)s [%(filename)s] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S',
+    level=logging.INFO,
+    encoding="utf-8")
 
 class REM_sgd:
     def __init__(self,
@@ -90,14 +94,14 @@ class REM_sgd:
                 
                 #Train step 
                 self.model.train()
-                x_tmp = X[i]
+                x_tmp = X[batch]
                 x_tmp = spline_diff(x_tmp,
                                   df = self.spline_df,
                                   bounds=self.bounds)
                 
                 if X_inter is not None:
                     x_train_inter = torch.tensor([[]]).reshape(batch_size,0)
-                    x_inter = X_inter[i]
+                    x_inter = X_inter[batch]
                     for i in range(0,self.n_inter):
                         x_tmp_inter = x_inter[:,i*4:(i+1)*4]
                         tmp = spline_diff_inter(X = x_tmp_inter,
@@ -111,7 +115,7 @@ class REM_sgd:
                 
                 x_tmp = x_tmp.to(self.device)
                 logit_out = self.model(x_tmp)
-                loss = self.NLL(logit_out,torch.ones(len(x_tmp),1,device=self.device))
+                loss = self.NLL(logit_out,torch.ones(len(logit_out),1,device=self.device))
                 perp = np.exp(loss.item())
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -120,7 +124,7 @@ class REM_sgd:
                 #Validation step
                 self.model.eval()
                 logit_val = self.model(x_val)
-                val_loss = self.NLL(logit_val,torch.ones(len(x_tmp),1,device=self.device)).item()
+                val_loss = self.NLL(logit_val,torch.ones(len(logit_val),1,device=self.device)).item()
                 
                 if verbose:
                     print(f'Epoch: {epoch+1} | Batch {batch+1}/{n_batches} | batch loss = {np.round(loss.item(),4)} | val loss = {np.round(val_loss,4)} | Perplexity = {np.round(perp.item(),4)}')
@@ -161,9 +165,30 @@ class REM_sgd:
         
         self.model.eval()
         logit_out =self.model(X)
-        loss = self.NLL(logit_out,torch.ones(len(X),1,device=self.device)).item()
+        loss = self.NLL(logit_out,torch.ones(n,1,device=self.device)).item()
         
         return loss
     
     def get_coefs(self):
         return self.model.linear.weight.detach().squeeze(0)
+    
+    def fitted_values_pl(self,
+                         data:torch.tensor,
+                         batch_size:torch.tensor):
+        
+        data = data.split(batch_size)
+        n_batches = len(data)
+        
+        out = torch.tensor([])
+        logging.info('Computing fitted values on all batches')
+        for batch in tqdm(range(n_batches)):
+            x_tmp = data[batch]
+            x_tmp = spline_diff(x_tmp,
+                                  df = self.spline_df,
+                                  bounds=self.bounds).to(self.device)
+            fit = x_tmp @ self.get_coefs()
+            out = torch.cat((out, fit.cpu()))
+            
+        return out
+            
+            
