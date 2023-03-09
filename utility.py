@@ -3,9 +3,6 @@ import numpy as np
 import vaex as vx
 import torch
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 from tqdm import tqdm
 #from joblib import Parallel, delayed
 #from scipy.spatial.distance import cosine
