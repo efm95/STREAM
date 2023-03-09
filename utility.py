@@ -110,11 +110,3 @@ def ipc_classes(ipc:str,
     ipc = pd.DataFrame({'patnum':ipc.index,'classes':ipc})
         
     return vx.from_pandas(ipc)
-
-
-#TODO: plot_spline
-
-
-
-#TODO: plot_rep
-
