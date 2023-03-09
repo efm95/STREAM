@@ -131,6 +131,10 @@ class effects_creation:
         with open('data_preprocessing/embeddings.pkl','rb') as input_file:
             emb = pkl.load(input_file)['embeddings']
             
+        #sim_2,pos = TexSim(sender_pos = self.df['sender_pos'].to_numpy().astype('int'),
+        #                 rec_pos = self.rset['receiver_pos'].to_numpy().astype('int'),
+        #                 emb_matrix = emb,
+        #                 pub_date_y = self.df['event_year'].to_numpy().astype('int'))
         
         sim_2 = TexSim(sender_pos = self.df['sender_pos'].to_numpy().astype('int'),
                          rec_pos = self.rset['receiver_pos'].to_numpy().astype('int'),
@@ -139,6 +143,9 @@ class effects_creation:
         
         
         sim_2 = sim_2['sim'].to_numpy()
+        #textual_sim_2 = vx.from_arrays(pos = pos,
+        #                               sim_2 = sim_2)
+        #
             
         del emb
         

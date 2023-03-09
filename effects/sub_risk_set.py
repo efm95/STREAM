@@ -120,4 +120,9 @@ class sub_riskset:
         with open('effects/sub_risk_set.npy', 'wb') as f:
             np.save(f, risk_set_cum_cit)
             np.save(f, risk_set_tfe)
-
+        #np.save('effects/subrs_cum_cit.npy',risk_set_cum_cit)
+        #np.save('effects/subrs_tfe.npy',risk_set_tfe)
+        
+            
+    
+    
