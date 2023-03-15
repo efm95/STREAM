@@ -1,5 +1,6 @@
-# DREAM
-Deep Reletional Event Additive Model (DREAM) 
+# DREAM: A Deep Relational Event Additive Model for modeling patent citations
+
+This repository contains the codes for the paper [A Deep Relational Event Additive Model for modeling patent citations](https://arxiv.org/abs/2303.07961).
 
 ## Abstract 
 
