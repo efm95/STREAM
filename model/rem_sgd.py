@@ -174,9 +174,13 @@ class REM_sgd:
     
     def fitted_values_pl(self,
                          data:torch.tensor,
-                         batch_size:torch.tensor):
+                         batch_size:torch.tensor,
+                         data_inter:torch.tensor=None):
         
         data = data.split(batch_size)
+        if data_inter is not None:
+            data_inter = data_inter.split(batch_size)
+        
         n_batches = len(data)
         
         out = torch.tensor([])
@@ -186,9 +190,24 @@ class REM_sgd:
             x_tmp = spline_diff(x_tmp,
                                   df = self.spline_df,
                                   bounds=self.bounds).to(self.device)
+            
+            if data_inter is not None:
+                x_inter = data_inter[batch]                
+                x_test_inter = torch.tensor([[]]).reshape(len(x_tmp),0)
+                for i in range(0,self.n_inter):
+                    x_tmp_inter = x_inter[:,i*4:(i+1)*4]
+                    tmp = spline_diff_inter(X = x_tmp_inter,
+                                            df = list(self.spline_df_inter[i*4:(i+1)*4]),
+                                            bounds=self.inter_bounds[i*2:(i+1)*2,:])
+                
+                    x_test_inter = torch.column_stack((x_test_inter,tmp))
+                
+                x_tmp = torch.cat((x_tmp,x_test_inter.to(self.device)),dim=1)
+                
+            
             fit = x_tmp @ self.get_coefs()
+            
             out = torch.cat((out, fit.cpu()))
             
         return out
-            
-            
+    
