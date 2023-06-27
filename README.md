@@ -1,6 +1,7 @@
 # STREAM: A Stochastic Gradient Relational Event Additive Model for modelling US patent citations from 1976 until 2022
 
-This repository contains the codes for the paper [A Deep Relational Event Additive Model for modeling patent citations](https://arxiv.org/abs/2303.07961).
+This repository contains the codes for the paper [A Stochastic Gradient Relational Event Additive Model for modelling US patent citations from 1976 until 2022
+](https://arxiv.org/abs/2303.07961).
 
 ## Abstract 
 
