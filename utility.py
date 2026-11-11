@@ -13,15 +13,13 @@ logging.basicConfig(format='%(asctime)s [%(filename)s] %(message)s',
     level=logging.DEBUG)
 
 def device_identifier():
-    try: #torch 2.0 currently under development (08/02/2023)
-        if torch.has_mps:
-            dev = 'mps'
-    except:
-        if torch.has_cuda:
-            dev = 'cuda'
-        else:
-            dev = 'cpu'
-    return dev
+    """Return the available device: Apple MPS, then CUDA, then CPU."""
+    mps = getattr(torch.backends, 'mps', None)
+    if mps is not None and mps.is_available():
+        return 'mps'
+    if torch.cuda.is_available():
+        return 'cuda'
+    return 'cpu'
 
 
 def remove_duplicates(df, grouping_cols: list):
